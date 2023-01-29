@@ -84,7 +84,7 @@ app.MapPost("/security/createToken",
     try
     {
         if (user == null || user.UserName == null || user.UserName == ""
-   || user.Password == null || user.Password == "")
+                || user.Password == null || user.Password == "")
         {
             return Results.Unauthorized();
         }
