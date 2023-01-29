@@ -67,6 +67,14 @@ builder.Services.AddDbContext<DataContext>(options => options.UseSqlite(builder.
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(policyBuilder =>
+    policyBuilder.AddPolicy("devPolicy", policy =>
+        policy.WithOrigins("http://localhost:3000")
+        .SetIsOriginAllowedToAllowWildcardSubdomains()
+        .AllowAnyHeader()
+        .AllowAnyHeader())
+);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -80,6 +88,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapPost("/security/createToken",
 [AllowAnonymous] (User user, DataContext db) =>
@@ -152,5 +161,6 @@ app.MapPost("/security/createToken",
 });
 
 app.MapControllers();
+app.UseCors("devPolicy");
 
 app.Run();
