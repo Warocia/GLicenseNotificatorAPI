@@ -11,6 +11,21 @@ namespace GLicenseNotificatorAPI.Model
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
+            License testLicense1 = new License()
+            {
+                Id = Guid.NewGuid(),
+                LicenseNumber = "G3434343",
+                IsValidUtc = DateTime.UtcNow.AddDays(200),
+                NotificationSent= false
+            };
+
+            License testLicense2 = new License()
+            {
+                Id = Guid.NewGuid(),
+                LicenseNumber = "X13",
+                IsValidUtc = DateTime.UtcNow.AddDays(100),
+                NotificationSent = false
+            };
 
             var newAdmin = new LicenceUser()
             {
@@ -19,7 +34,7 @@ namespace GLicenseNotificatorAPI.Model
                 Password = password,
                 Email = email,
                 IsAdmin = true,
-                Licenses = new List<License>() {}
+                Licenses = new List<License>() { testLicense1 , testLicense2 }
             };
 
             context.Users.Add(newAdmin);
