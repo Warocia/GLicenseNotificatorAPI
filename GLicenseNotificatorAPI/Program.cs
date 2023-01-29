@@ -2,6 +2,7 @@ using GLicenseNotificatorAPI.Authentication;
 using GLicenseNotificatorAPI.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -62,6 +63,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddDbContext<DataContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("WebApiDatabase")));
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -79,7 +82,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapPost("/security/createToken",
-[AllowAnonymous] (User user, IConfiguration configuration) =>
+[AllowAnonymous] (User user, DataContext db) =>
 {
     try
     {
@@ -88,8 +91,6 @@ app.MapPost("/security/createToken",
         {
             return Results.Unauthorized();
         }
-
-        var db = new DataContext(configuration);
 
         //Database is empty, create Admin user
         if (db.Users.Count() < 1)

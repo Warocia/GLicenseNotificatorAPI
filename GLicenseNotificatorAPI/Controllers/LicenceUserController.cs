@@ -15,11 +15,11 @@ namespace GLicenseNotificatorAPI.Controllers
     {
 
         private readonly ILogger<LicenseController> _logger;
-        private readonly IConfiguration _configuration;
-        public LicenceUserController(IConfiguration configuration, ILogger<LicenseController> logger)
+        private DataContext _db;
+        public LicenceUserController(DataContext db, ILogger<LicenseController> logger)
         {
             _logger = logger;
-            _configuration = configuration;
+            _db = db;
         }
 
     
@@ -27,7 +27,6 @@ namespace GLicenseNotificatorAPI.Controllers
         public ActionResult<IEnumerable<Model.LicenceUser>> GetLicenseUsers()
         {
             LicenceUser? user;
-            DataContext? db;
 
             try
             {
@@ -36,8 +35,8 @@ namespace GLicenseNotificatorAPI.Controllers
                 {
                     return Unauthorized();
                 }
-                db = new Model.DataContext(_configuration);
-                user = db.Users.FirstOrDefault(u => u.UserName == userName);
+
+                user = _db.Users.FirstOrDefault(u => u.UserName == userName);
             }
             catch (Exception)
             {
@@ -52,7 +51,7 @@ namespace GLicenseNotificatorAPI.Controllers
 
             try
             {
-                return db.Users.ToList();
+                return _db.Users.ToList();
             }
             catch (Exception)
             {
@@ -65,7 +64,6 @@ namespace GLicenseNotificatorAPI.Controllers
         public ActionResult<Model.LicenceUser> CreateLicenseUser(Model.LicenceUser newUser)
         {
             LicenceUser? user;
-            DataContext? db;
 
             try
             {
@@ -74,8 +72,8 @@ namespace GLicenseNotificatorAPI.Controllers
                 {
                     return Unauthorized();
                 }
-                db = new Model.DataContext(_configuration);
-                user = db.Users.FirstOrDefault(u => u.UserName == userName);
+
+                user = _db.Users.FirstOrDefault(u => u.UserName == userName);
             }
             catch (Exception)
             {
@@ -90,9 +88,9 @@ namespace GLicenseNotificatorAPI.Controllers
 
             try
             {
-                db.Entry(newUser).State = EntityState.Added;
-                db.Users.Add(newUser); ;
-                db.SaveChanges();
+                _db.Entry(newUser).State = EntityState.Added;
+                _db.Users.Add(newUser); ;
+                _db.SaveChanges();
 
                 return newUser;
             }
@@ -106,7 +104,6 @@ namespace GLicenseNotificatorAPI.Controllers
         public ActionResult<Model.LicenceUser> UpdateLicenseUser(Model.LicenceUser updateUser)
         {
             LicenceUser? user;
-            DataContext? db;
 
             try
             {
@@ -115,8 +112,8 @@ namespace GLicenseNotificatorAPI.Controllers
                 {
                     return Unauthorized();
                 }
-                db = new Model.DataContext(_configuration);
-                user = db.Users.FirstOrDefault(u => u.UserName == userName);
+
+                user = _db.Users.FirstOrDefault(u => u.UserName == userName);
             }
             catch (Exception)
             {
@@ -131,7 +128,7 @@ namespace GLicenseNotificatorAPI.Controllers
 
             try
             {
-                var dbUser = db.Users.FirstOrDefault(l => l.Id == updateUser.Id);
+                var dbUser = _db.Users.FirstOrDefault(l => l.Id == updateUser.Id);
 
                 if (dbUser == null)
                 {
@@ -146,7 +143,7 @@ namespace GLicenseNotificatorAPI.Controllers
                     dbUser.Email = updateUser.Email;
                     dbUser.Password = dbUser.Password;
 
-                    db.SaveChanges();
+                    _db.SaveChanges();
                 }
 
                 return dbUser;
@@ -161,7 +158,6 @@ namespace GLicenseNotificatorAPI.Controllers
         public ActionResult DeleteLicenseUser(int id)
         {
             LicenceUser? user;
-            DataContext? db;
 
             try
             {
@@ -170,8 +166,8 @@ namespace GLicenseNotificatorAPI.Controllers
                 {
                     return Unauthorized();
                 }
-                db = new Model.DataContext(_configuration);
-                user = db.Users.FirstOrDefault(u => u.UserName == userName);
+
+                user = _db.Users.FirstOrDefault(u => u.UserName == userName);
             }
             catch (Exception)
             {
@@ -186,15 +182,15 @@ namespace GLicenseNotificatorAPI.Controllers
 
             try
             {
-                var dbUser = db.Users.FirstOrDefault(l => l.Id == id);
+                var dbUser = _db.Users.FirstOrDefault(l => l.Id == id);
 
                 if (dbUser == null)
                 {
                     return StatusCode(StatusCodes.Status404NotFound);
                 }
 
-                db.Users.Remove(dbUser);
-                db.SaveChanges();
+                _db.Users.Remove(dbUser);
+                _db.SaveChanges();
 
                 return Ok();
             }

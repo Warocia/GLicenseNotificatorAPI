@@ -15,18 +15,17 @@ namespace GLicenseNotificatorAPI.Controllers
     {
 
         private readonly ILogger<LicenseController> _logger;
-        private readonly IConfiguration _configuration;
-        public LicenseController(IConfiguration configuration, ILogger<LicenseController> logger)
+        private DataContext _db;
+        public LicenseController(DataContext db, ILogger<LicenseController> logger)
         {
             _logger = logger;
-            _configuration = configuration;
+            _db = db;
         }
 
         [HttpPost(Name = "UpdateUserLicenseList")]
         public ActionResult UpdateUserLicenseList(List<Model.License> licenses)
         {
             LicenceUser? user;
-            DataContext? db;
 
             try
             {
@@ -37,8 +36,7 @@ namespace GLicenseNotificatorAPI.Controllers
                     return Unauthorized();
                 }
 
-                db = new Model.DataContext(_configuration);
-                user = db.Users.Include(u => u.Licenses).FirstOrDefault(u => u.UserName == userName);
+                user = _db.Users.Include(u => u.Licenses).FirstOrDefault(u => u.UserName == userName);
 
                 if (user == null)
                 {
@@ -83,11 +81,11 @@ namespace GLicenseNotificatorAPI.Controllers
                 // Check for new licenses that were not in the db
                 foreach (var license in licenses)
                 {
-                    db.Entry(license).State = EntityState.Added;
+                    _db.Entry(license).State = EntityState.Added;
                     user.Licenses.Add(license);
                 }
 
-                db.SaveChanges();
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -107,8 +105,8 @@ namespace GLicenseNotificatorAPI.Controllers
                 {
                     return Unauthorized();
                 }
-                var db = new Model.DataContext(_configuration);
-                user = db.Users.Include(u => u.Licenses).FirstOrDefault(u => u.UserName == userName);
+
+                user = _db.Users.Include(u => u.Licenses).FirstOrDefault(u => u.UserName == userName);
             }
             catch (Exception)
             {
