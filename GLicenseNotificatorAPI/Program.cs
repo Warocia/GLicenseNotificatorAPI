@@ -81,45 +81,73 @@ app.UseAuthorization();
 app.MapPost("/security/createToken",
 [AllowAnonymous] (User user, IConfiguration configuration) =>
 {
-    if (user == null || user.UserName == null || user.UserName == ""
-    || user.Password == null || user.Password == "")
+    try
     {
-        return Results.Unauthorized();
-    }
-
-    var db = new DataContext(configuration);
-    var dbUser = db.Users.FirstOrDefault(u => u.UserName == user.UserName && u.Password == user.Password);
-
-    if (dbUser != null)
-    {
-        var issuer = builder.Configuration["Jwt:Issuer"];
-        var audience = builder.Configuration["Jwt:Audience"];
-        var key = Encoding.ASCII.GetBytes
-        (builder.Configuration["Jwt:Key"]);
-        var tokenDescriptor = new SecurityTokenDescriptor
+        if (user == null || user.UserName == null || user.UserName == ""
+   || user.Password == null || user.Password == "")
         {
-            Subject = new ClaimsIdentity(new[]
+            return Results.Unauthorized();
+        }
+
+        var db = new DataContext(configuration);
+
+        //Database is empty, create Admin user
+        if (db.Users.Count() < 1)
+        {
+            var userName = builder.Configuration["MainUser:UserName"];
+            var password = builder.Configuration["MainUser:Password"];
+            var email = builder.Configuration["MainUser:Email"];
+
+            if (userName != null && password != null && email != null)
             {
+                MyDbContextSeeder.Seed(db, userName, email, password);
+            }
+        }
+
+        var dbUser = db.Users.FirstOrDefault(u => u.UserName == user.UserName && u.Password == user.Password);
+
+        if (dbUser != null)
+        {
+            string? issuer = builder.Configuration["Jwt:Issuer"];
+            string? audience = builder.Configuration["Jwt:Audience"];
+            string? jwtKey = builder.Configuration["Jwt:Key"];
+
+            if (issuer == null || audience == null || jwtKey == null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var key = Encoding.ASCII.GetBytes(jwtKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
                 new Claim("Id", Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti,
                 Guid.NewGuid().ToString())
              }),
-            Expires = DateTime.UtcNow.AddMinutes(5),
-            Issuer = issuer,
-            Audience = audience,
-            SigningCredentials = new SigningCredentials
-            (new SymmetricSecurityKey(key),
-            SecurityAlgorithms.HmacSha512Signature)
-        };
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        var jwtToken = tokenHandler.WriteToken(token);
-        var stringToken = tokenHandler.WriteToken(token);
-        return Results.Ok(stringToken);
+                Expires = DateTime.UtcNow.AddMinutes(5),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials
+                (new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha512Signature)
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var jwtToken = tokenHandler.WriteToken(token);
+            var stringToken = tokenHandler.WriteToken(token);
+            return Results.Ok(stringToken);
+        }
+        return Results.Unauthorized();
     }
-    return Results.Unauthorized();
+    catch (Exception)
+    {
+        return Results.Unauthorized(); ;
+    }
 });
 
 app.MapControllers();
