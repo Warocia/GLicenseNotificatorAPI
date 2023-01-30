@@ -71,7 +71,7 @@ builder.Services.AddCors(policyBuilder =>
     policyBuilder.AddPolicy("devPolicy", policy =>
         policy.WithOrigins("http://localhost:3000")
         .SetIsOriginAllowedToAllowWildcardSubdomains()
-        .AllowAnyHeader()
+        .AllowAnyMethod()
         .AllowAnyHeader())
 );
 
