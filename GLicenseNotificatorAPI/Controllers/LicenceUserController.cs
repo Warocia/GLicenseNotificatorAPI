@@ -1,5 +1,7 @@
+using GLicenseNotificatorAPI.Crypto;
 using GLicenseNotificatorAPI.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
@@ -16,10 +18,12 @@ namespace GLicenseNotificatorAPI.Controllers
 
         private readonly ILogger<LicenseController> _logger;
         private DataContext _db;
+        private PasswordHasher passwordHasher;
         public LicenceUserController(DataContext db, ILogger<LicenseController> logger)
         {
             _logger = logger;
             _db = db;
+            passwordHasher = new PasswordHasher();
         }
 
     
@@ -89,6 +93,7 @@ namespace GLicenseNotificatorAPI.Controllers
             try
             {
                 _db.Entry(newUser).State = EntityState.Added;
+                newUser.Password = passwordHasher.Hash(newUser.Password);
                 _db.Users.Add(newUser); ;
                 _db.SaveChanges();
 
@@ -141,7 +146,8 @@ namespace GLicenseNotificatorAPI.Controllers
                 {
                     dbUser.IsAdmin = updateUser.IsAdmin;
                     dbUser.Email = updateUser.Email;
-                    dbUser.Password = dbUser.Password;
+
+                    dbUser.Password = passwordHasher.Hash(updateUser.Password);
 
                     _db.SaveChanges();
                 }

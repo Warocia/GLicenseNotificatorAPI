@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GLicenseNotificatorAPI.Crypto;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 
 namespace GLicenseNotificatorAPI.Model
@@ -27,11 +28,13 @@ namespace GLicenseNotificatorAPI.Model
                 NotificationSent = false
             };
 
+            PasswordHasher passwordHasher = new PasswordHasher();
+
             var newAdmin = new LicenceUser()
             {
 
                 UserName = username,
-                Password = password,
+                Password = passwordHasher.Hash(password),
                 Email = email,
                 IsAdmin = true,
                 Licenses = new List<License>() { testLicense1 , testLicense2 }

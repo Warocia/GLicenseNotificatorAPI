@@ -114,10 +114,18 @@ app.MapPost("/security/createToken",
             }
         }
 
-        var dbUser = db.Users.FirstOrDefault(u => u.UserName == user.UserName && u.Password == user.Password);
+
+        var dbUser = db.Users.FirstOrDefault(u => u.UserName == user.UserName);
 
         if (dbUser != null)
         {
+            //Check password
+            GLicenseNotificatorAPI.Crypto.PasswordHasher passwordHasher = new GLicenseNotificatorAPI.Crypto.PasswordHasher();
+            if(!passwordHasher.Check(dbUser.Password, user.Password))
+            {
+                return Results.Unauthorized();
+            }
+
             string? issuer = builder.Configuration["Jwt:Issuer"];
             string? audience = builder.Configuration["Jwt:Audience"];
             string? jwtKey = builder.Configuration["Jwt:Key"];
