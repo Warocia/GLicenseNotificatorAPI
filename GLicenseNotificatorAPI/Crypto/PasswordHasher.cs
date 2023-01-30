@@ -6,12 +6,12 @@ namespace GLicenseNotificatorAPI.Crypto
 {
     public sealed class PasswordHasher 
     {
-        private const int SaltSize = 16; // 128 bit 
-        private const int KeySize = 32; // 256 bit
+        private const int SaltSize = 64;  
+        private const int KeySize = 64; 
 
         public PasswordHasher()
         {
-            Iterations = 10000;
+            Iterations = 120000;
         }
 
         private int Iterations { get; }
