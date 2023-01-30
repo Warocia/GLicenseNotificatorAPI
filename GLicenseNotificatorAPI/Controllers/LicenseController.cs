@@ -59,6 +59,7 @@ namespace GLicenseNotificatorAPI.Controllers
                     if (license == null)
                     {
                         // dbLicense does not exist in licenses, so delete from db
+                        _db.Entry(dbLicense).State = EntityState.Deleted;
                         user.Licenses.Remove(dbLicense);
                     }
                     else
