@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Dynamic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -158,7 +159,12 @@ app.MapPost("/security/createToken",
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = tokenHandler.WriteToken(token);
             var stringToken = tokenHandler.WriteToken(token);
-            return Results.Ok(stringToken);
+
+            dynamic jsonObject = new ExpandoObject();
+            jsonObject.JwtToken = stringToken;
+            jsonObject.IsAdmin = dbUser.IsAdmin;
+           
+            return Results.Ok(jsonObject);
         }
         return Results.Unauthorized();
     }
