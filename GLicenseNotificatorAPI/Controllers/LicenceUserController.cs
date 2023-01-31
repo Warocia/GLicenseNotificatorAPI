@@ -1,3 +1,4 @@
+using GLicenseNotificatorAPI.Authentication;
 using GLicenseNotificatorAPI.Crypto;
 using GLicenseNotificatorAPI.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -55,7 +56,9 @@ namespace GLicenseNotificatorAPI.Controllers
 
             try
             {
-                return _db.Users.ToList();
+                var users = _db.Users.ToList();
+                users.ForEach(u => u.Password = "???");
+                return users;
             }
             catch (Exception)
             {
@@ -96,6 +99,8 @@ namespace GLicenseNotificatorAPI.Controllers
                 newUser.Password = passwordHasher.Hash(newUser.Password);
                 _db.Users.Add(newUser); ;
                 _db.SaveChanges();
+
+                newUser.Password = "???";
 
                 return newUser;
             }
@@ -152,6 +157,7 @@ namespace GLicenseNotificatorAPI.Controllers
                     _db.SaveChanges();
                 }
 
+                dbUser.Password = "???";
                 return dbUser;
             }
             catch (Exception)
